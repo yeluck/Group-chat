@@ -1,0 +1,11 @@
+import types
+
+class Person(object):
+    pass
+
+def say(self):
+    print 'hello, world'
+    
+p = Person()
+p.say = types.MethodType(say, p, Person)
+p.say()
