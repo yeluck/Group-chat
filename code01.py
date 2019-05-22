@@ -1,7 +1,9 @@
 """
    汇率转换器
 """
+import pymysql
 
+data="127.0.0.1"
 # 1 获取数据
 float_usd = float(input("请输入美元"))
 
