@@ -116,6 +116,6 @@ class UdpServer:
 
 
 if __name__=='__main__':
-    server_addr=("176.122.17.117",8888)
+    server_addr=("0.0.0.0",8888)
     udp_server=UdpServer(server_addr)
     udp_server.start_server()
