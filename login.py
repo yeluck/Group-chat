@@ -24,12 +24,13 @@ class Login:
 
         self.cur=self.db.cursor()
 
-    def login(self,name,pw):
+    def login(self,name,pw,addr):
         sql="select * from %s WHERE name='%s' and passwd='%s';"%(self.table,name,pw)
         self.cur.execute(sql)
 
         if self.cur.fetchone():
-            sql="update user set last_date=now() WHERE name='%s'"%name
+            sql='update user set last_date=now() , state=1 , addr="%s" WHERE name="%s"'%(addr,name)
+            print(sql)
             try:
                 self.cur.execute(sql)
                 self.db.commit()

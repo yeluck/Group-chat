@@ -14,6 +14,23 @@ class ClientWindown(QtWidgets.QWidget):
         self.udp_client=udp_client
         self.start=False
 
+    def closeEvent(self, event):
+        """
+            重写closeEvent方法，实现dialog窗体关闭时执行一些代码
+            :param event: close()触发的事件
+            :return: None
+            """
+
+        reply = QtWidgets.QMessageBox.question(self, '本程序', "是否要退出程序？",
+                                               QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+                                               QtWidgets.QMessageBox.No)
+        if reply == QtWidgets.QMessageBox.Yes:
+            self.udp_client.close_windows()
+            event.accept()
+        else:
+            event.ignore()
+
+
     def main(self):
         self.resize(600, 500)
         self.setStyleSheet("background-color:rgb(255,255,255)")
@@ -88,9 +105,9 @@ class ClientWindown(QtWidgets.QWidget):
         name=self.register_user.toPlainText()
         pw=self.register_pw.toPlainText()
 
+        #如果输入框跟密码框不为空 则执行
         if name and pw:
             msg=self.udp_client.register(name,pw)
-
             if msg=='OK':
                 self.register_frame.hide()
                 self.login_frame.show()
@@ -131,6 +148,10 @@ class ClientWindown(QtWidgets.QWidget):
 
 
     def recv_message(self):
+        """
+        线程接收服务端信息程序
+        :return:
+        """
         while True:
             print("进入线程")
             msg, addr = self.udp_client.sockfd.recvfrom(1024)
@@ -171,13 +192,6 @@ class UdpClient:
     def create_sock(self):
         self.sockfd=socket(AF_INET,SOCK_DGRAM)
 
-    def recv_message(self):
-        while True:
-            print("等待接受信息")
-            msg, addr = self.sockfd.recvfrom(1024)
-            msg=msg.decode()
-            print(msg)
-
     def register(self,name,pw):
         """
         处理注册请求
@@ -216,44 +230,20 @@ class UdpClient:
         :param data:
         :return:
         """
-        if not data:
-            data = "Q " + self.usre_name
-            self.sockfd.sendto(data.encode(), self.server_addr)
-            sys.exit("客户端关闭")
         data = "P " + self.usre_name + "/" + data
         self.sockfd.sendto(data.encode(), self.server_addr)
 
+    def close_windows(self):
 
-    def start_client(self):
-        while True:
-            data=input("请输入你的昵称：")
-            user=data
-            data="L "+data
-            self.sockfd.sendto(data.encode(),self.server_addr)
-            data,addr=self.sockfd.recvfrom(1024)
-            if data==b"OK":
-                self.usre_name=user
-                t=Thread(target=self.recv_message)
-                t.setDaemon(True)
-                t.start()
-                print("登录聊天室")
-                break
+        data = "Q " + self.usre_name
+        self.sockfd.sendto(data.encode(), self.server_addr)
 
-            else:
-                print(data.decode())
 
-        while True:
-            data=input("发言")
-            if not data:
-                data = "Q " + self.usre_name
-                self.sockfd.sendto(data.encode(),self.server_addr)
-                sys.exit("客户端关闭")
-            data="P " + self.usre_name + "MM" + data
-            self.sockfd.sendto(data.encode(),self.server_addr)
+
 
 
 if __name__=='__main__':
-    server_addr=("176.122.17.117",8888)
+    server_addr=("0.0.0.0",8888)
     udp_client=UdpClient(server_addr)
 
     app = QtWidgets.QApplication(sys.argv)

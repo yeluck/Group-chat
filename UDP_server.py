@@ -1,6 +1,6 @@
 """
     UDP协议聊天室
-
+    a=eval(d)  数据库存入的字符类型  用的时候用eval  处理一下
 """
 from socket import *
 from threading import Thread,Event
@@ -26,6 +26,8 @@ class UdpServer:
         self.sockfd.bind(self.server_addr)
         self.id=self.server_addr[0]
         self.port=self.server_addr[1]
+
+
     def register(self,data,addr):
         print("进入服务端　注册处理")
         msg=data.split("/")
@@ -38,6 +40,10 @@ class UdpServer:
             self.sockfd.sendto('提交数据错误'.encode(), addr)
 
     def add_user(self):
+        """
+        控制面包右侧栏显示用户信息
+        :return:
+        """
         while True:
 
             self.e.wait()
@@ -57,13 +63,12 @@ class UdpServer:
     def login(self,data,addr):
         msg=data.split("/")
         if len(msg)==2:
-            if self.login_db.login(msg[0],msg[1]):
+            if self.login_db.login(msg[0],msg[1],addr):
 
                 self.sockfd.sendto(b"OK",addr)
                 self.usre_list.append((msg[0],addr))
                 self.new_user=msg[0]
                 self.new_user_addr=addr
-                print(self.usre_list)
                 self.e.set()
             else:
                 self.sockfd.sendto('账号或密码错误'.encode(), addr)
@@ -88,7 +93,6 @@ class UdpServer:
             print("开始接受到数据")
             print(msg)
             if msg[0]=="R":
-                print("进入到Ｒ处理")
                 self.register(msg[-1],data[1])
 
             elif msg[0]=='L':
@@ -100,6 +104,7 @@ class UdpServer:
 
 
             elif msg[0]=="Q":
+                print("进入退出处理")
                 msg =msg[-1]
                 print(msg)
                 print(self.usre_list)
